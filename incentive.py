@@ -2,7 +2,6 @@ import pandas as pd
 import os, argparse, sys
 import numpy as np
 from zipfile import ZipFile
-from collections import defaultdict
 
 def unzip_and_analyze(filename):
     basepath = os.getcwd()
@@ -75,86 +74,23 @@ def unzip_and_analyze(filename):
             d = dumper_code.iloc[0]
         return s+d+'L10'
 
+    def add_incentive_earning(row):
+        incenive_earning = code_trip_rates.loc[code_trip_rates['CODE_TRIP'] == int(row['Code_N_Trip']), 'EARNING']
+        i = ''
+        if (len(incenive_earning) > 0):
+            i = incenive_earning.iloc[0]
+        return i
 
     inc['Shovel_Dumper_Lead'] = inc.apply(lambda row: add_shovel_dumper_code(row), axis=1)
     inc['Combination_Code'] = inc.apply(lambda row: add_combination_code(row), axis=1)
     inc['Code_N_Trip'] = inc.apply(lambda row: add_code_n_trip(row), axis=1)
+    inc['Incentive_Earning'] = inc.apply(lambda row: add_incentive_earning(row), axis=1)
 
     inc.to_excel(os.path.join(temp_out_path, 'inc2.xlsx'))
-
 
     #Traverse Row wise
     # for row in inc.itertuples():
     #     print(row)
-
-
-    #Traverse Column wise
-
-    # Get date shift section
-    # excel_references = defaultdict(dict)
-    # for file in excel_files:
-    #     vars = file.split('.')[0].split('/')[-1].split('_')
-    #     date = vars[0]
-    #     shift_section = vars[2] + '_' + vars[3]
-    #     excel_references[date][shift_section] = pd.read_excel(file)
-    # excel_references = dict(excel_references)
-
-    # print('\n---------------------- INDIVIDUAL SHIFT & SECTION ANALYSIS - COAL ----------------------\n')
-    # for section,obj in excel_references.items():
-    #     for shift,df in obj.items():
-    #         print('Coal Production ({} {}): {} Trips {} Tonnes.'
-    #               .format(section, shift, df[df['Coal dumped'] >= 0]['Dumper_Number_of_Trips'].sum(), df['Coal dumped'].sum()))
-    #
-    # print('\n---------------------- INDIVIDUAL SHIFT & SECTION ANALYSIS - OB ----------------------\n')
-    # for section,obj in excel_references.items():
-    #     for shift,df in obj.items():
-    #         print('OB Production ({} {}): {} Trips {} Cum.'
-    #               .format(section, shift, df[df['OB Dumped'] >= 0]['Dumper_Number_of_Trips'].sum(), df['OB Dumped'].sum()))
-    #
-    # #Analyze total production file
-    # os.chdir(basepath)
-    # the_file = pd.read_excel('total_production.xlsx')
-    #
-    # print('\n---------------------- ANALYSIS OF {} ----------------------'.format('total_production.xlsx'))
-    # print("\nTotal {} rows.\n".format(len(the_file.index)))
-    # print('Total Trips: {}.\n'.format(the_file['Dumper_Number_of_Trips'].sum()))
-    # print('Total Coal Production: {} Tonnes.\n'.format(the_file['Coal dumped'].sum()))
-    # print('Total OB Production: {} Cum.\n'.format(the_file['OB Dumped'].sum()))
-    # print('\nData rows per Process-Order \n')
-    # print(pd.pivot_table(the_file, values='Coal dumped', columns=['Process_Order'], index='shift', aggfunc=np.count_nonzero))
-    # print('\nProcess-Order-wise Total Production --- COAL\n')
-    # print(pd.pivot_table(the_file, values='Coal dumped', columns=['Process_Order'], index='shift', aggfunc=np.sum).fillna(0))
-    # print('\nOB - Process-Order-wise Total Production --- OB\n')
-    # print(pd.pivot_table(the_file, values='OB Dumped', columns=['Process_Order'], index='shift', aggfunc=np.sum).fillna(0))
-    #
-    # print('\nProcess-Order-wise Overall Totals\n')
-    # print(the_file[['Process_Order', 'Coal dumped', 'OB Dumped']].groupby('Process_Order').sum())
-    
-    #print('\n-----------------------------OTHER TOTALS---------------------------')
-    #print('\nSHIFTWISE PRODUCTION TOTALS:\n')
-    #print(the_file[['shift', 'Coal dumped', 'OB Dumped']].groupby('shift').sum())
-    #print('\nSHIFTWISE TRIP COUNT TOTALS:\n')
-    #print(the_file[['shift', 'Dumper_Number_of_Trips']].groupby('shift').sum())
-    
-    #print('\n---------------------- PIVOT TABLES - COAL ----------------------\n')
-    #print('\nSHIFTWISE PRODUCTION TOTALS PER SEAM ------- Coal\n')
-    #print(pd.pivot_table(the_file, values='Coal dumped', columns=['SEAM'], index='shift', aggfunc=np.sum).fillna(0))
-    #print('\nSHIFTWISE PRODUCTION TOTALS PER SHOVEL------- Coal\n')
-    #print(pd.pivot_table(the_file, values='Coal dumped', columns=['Shovel_number'], index='shift', aggfunc=np.sum).fillna(0))
-    #print('\nDUMPYARD WISE PRODUCTION TOTALS PER SHOVEL------- Coal\n')
-    #print(pd.pivot_table(the_file, values='Coal dumped', columns=['Shovel_number'], index='DUMPYARD CODE', aggfunc=np.sum).fillna(0))
-
-    #print('\n---------------------- PIVOT TABLES - OB ----------------------\n')
-    #print('SHIFTWISE PRODUCTION TOTALS PER SEAM ------- OB\n')
-    #print(pd.pivot_table(the_file, values='OB Dumped', columns='shift', index='SEAM', aggfunc=np.sum))
-    #print('\nSHIFTWISE PRODUCTION TOTALS PER SEAM ------- OB\n')
-    #print(pd.pivot_table(the_file, values='OB Dumped', columns=['SEAM'], index='shift', aggfunc=np.sum).fillna(0))
-    #print('\n')
-    #print(pd.pivot_table(the_file, values='OB Dumped', columns=['Process_Order'], index='shift', aggfunc=np.sum).fillna(0))
-    #print('\nSHIFTWISE PRODUCTION TOTALS PER SHOVEL------- OB\n')
-    #print(pd.pivot_table(the_file, values='OB Dumped', columns=['Shovel_number'], index='shift', aggfunc=np.sum).fillna(0))
-    #print('\nDUMPYARD WISE PRODUCTION TOTALS PER SHOVEL------- OB\n')
-    #print(pd.pivot_table(the_file, values='OB Dumped', columns=['Shovel_number'], index='DUMPYARD CODE', aggfunc=np.sum).fillna(0))
 
 if __name__ == '__main__':
     argvparser = argparse.ArgumentParser()
