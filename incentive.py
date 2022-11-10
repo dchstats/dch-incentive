@@ -5,34 +5,47 @@ from zipfile import ZipFile
 from collections import defaultdict
 
 def unzip_and_analyze(filename):
-    cwd = os.getcwd()
-    basepath = cwd
-    newpath = basepath
+    basepath = os.getcwd()
+    temp_path = os.path.join(basepath, 'temp')
+    temp_out_path = os.path.join(basepath, 'temp_out')
+    incenive_scheme_path = os.path.join(basepath, 'incentive_scheme')
+    shovel_codes_file = os.path.join(incenive_scheme_path, 'shovels.csv')
+    dumper_codes_file = os.path.join(incenive_scheme_path, 'dumpers.csv')
+    combination_codes_file = os.path.join(incenive_scheme_path, 'shovel-dumper-combination.csv')
+
     if(filename):
         with ZipFile(filename, 'r') as zip_reference:
-            zip_reference.extractall('temp')
-        newpath = os.path.join(basepath, 'temp')
+            zip_reference.extractall(temp_path)
+    else:
+        return
 
     #get excel file list
-    os.chdir(newpath)
-    files = os.listdir(os.getcwd())
-    excel_files = [x for x in files if x.endswith('.xlsx')]
+    files = os.listdir(temp_path)
+    excel_files = [os.path.join(temp_path, x) for x in files if x.endswith('.xlsx')]
     
-    #combine files
+    # combine files and output to temp_out_path dir
     combined_df = pd.concat([pd.read_excel(x) for x in excel_files], ignore_index=True)
-    os.chdir(basepath)
-    combined_df.to_excel('total_production.xlsx', index=False);
-    combined_df.to_csv('total_production.csv', index=False, sep='|')
+    combined_df.to_excel(os.path.join(temp_out_path, 'total_production.xlsx'), index=False)
+    combined_df.to_csv(os.path.join(temp_out_path, 'total_production.csv'), index=False, sep=',')
 
-    #Get date shift section
-    excel_references = defaultdict(dict)
-    for file in excel_files:
-        section_name = file.split('.')[0].split('_')[3]
-        shift_name = file.split('.')[0].split('_')[2]
-        excel_references[section_name][shift_name] = pd.read_excel(file)
-    
-    excel_references = dict(excel_references)
-    
+    inc = pd.pivot_table(combined_df, values=['Dumper_Number_of_Trips'], columns=['shift'], index=['Operator.1', 'Shovel_number', 'Dumper_Number'], aggfunc=np.sum).fillna(0)
+    inc.to_excel(os.path.join(temp_out_path, 'inc2.xlsx'))
+
+    #read incentive scheme
+    shovel_codes = pd.read_csv(shovel_codes_file)
+
+    print(len(shovel_codes.index))
+
+
+    # Get date shift section
+    # excel_references = defaultdict(dict)
+    # for file in excel_files:
+    #     vars = file.split('.')[0].split('/')[-1].split('_')
+    #     date = vars[0]
+    #     shift_section = vars[2] + '_' + vars[3]
+    #     excel_references[date][shift_section] = pd.read_excel(file)
+    # excel_references = dict(excel_references)
+
     # print('\n---------------------- INDIVIDUAL SHIFT & SECTION ANALYSIS - COAL ----------------------\n')
     # for section,obj in excel_references.items():
     #     for shift,df in obj.items():
