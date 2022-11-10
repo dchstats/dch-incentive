@@ -28,13 +28,17 @@ def unzip_and_analyze(filename):
     combined_df.to_excel(os.path.join(temp_out_path, 'total_production.xlsx'), index=False)
     combined_df.to_csv(os.path.join(temp_out_path, 'total_production.csv'), index=False, sep=',')
 
-    inc = pd.pivot_table(combined_df, values=['Dumper_Number_of_Trips'], columns=['shift'], index=['Operator.1', 'Shovel_number', 'Dumper_Number'], aggfunc=np.sum).fillna(0)
+    #Prepare dataframe for incentive
+    inc = pd.pivot_table(combined_df, values=['Dumper_Number_of_Trips'], index=['Production_Dates', 'shift', 'Operator.1' , 'Shovel_number', 'Dumper_Number'], aggfunc=np.sum).fillna(0)
+    inc.index.names = ['Production_Date', 'Shift', 'Operator_No', 'Shovel_Number', 'Dumper_Number']
+    inc.columns = ['Dumper_Trips']
     inc.to_excel(os.path.join(temp_out_path, 'inc2.xlsx'))
 
     #read incentive scheme
     shovel_codes = pd.read_csv(shovel_codes_file)
+    dumper_codes = pd.read_csv(dumper_codes_file)
+    combination_codes = pd.read_csv(combination_codes_file)
 
-    print(len(shovel_codes.index))
 
 
     # Get date shift section
