@@ -12,6 +12,7 @@ def unzip_and_analyze(filename):
     shovel_codes_file = os.path.join(incenive_scheme_path, 'shovels.csv')
     dumper_codes_file = os.path.join(incenive_scheme_path, 'dumpers.csv')
     combination_codes_file = os.path.join(incenive_scheme_path, 'shovel-dumper-combination.csv')
+    code_trip_rate_file = os.path.join(incenive_scheme_path, 'code_trip_rate.csv')
 
     if(filename):
         with ZipFile(filename, 'r') as zip_reference:
@@ -32,14 +33,62 @@ def unzip_and_analyze(filename):
     inc = pd.pivot_table(combined_df, values=['Dumper_Number_of_Trips'], index=['Production_Dates', 'shift', 'Operator.1' , 'Shovel_number', 'Dumper_Number'], aggfunc=np.sum).fillna(0)
     inc.index.names = ['Production_Date', 'Shift', 'Operator_No', 'Shovel_Number', 'Dumper_Number']
     inc.columns = ['Dumper_Trips']
-    inc.to_excel(os.path.join(temp_out_path, 'inc2.xlsx'))
 
     #read incentive scheme
     shovel_codes = pd.read_csv(shovel_codes_file)
     dumper_codes = pd.read_csv(dumper_codes_file)
     combination_codes = pd.read_csv(combination_codes_file)
+    code_trip_rates = pd.read_csv(code_trip_rate_file)
+
+    # print(dumper_codes.loc[dumper_codes['DUMPER'] == 'CN-03', 'CODE'].iloc[0])
+    #further modify incentive dataframe
+    def add_shovel_dumper_code(row):
+        shovel_code = shovel_codes.loc[shovel_codes['SHOVEL'] == row.name[3], 'CODE']
+        dumper_code = dumper_codes.loc[dumper_codes['DUMPER'] == row.name[4], 'CODE']
+        s=''
+        d=''
+        if (len(shovel_code) > 0):
+            s = shovel_code.iloc[0]
+        if (len(dumper_code) > 0):
+            d = dumper_code.iloc[0]
+        return s+d+'L10'
+
+    def add_code_n_trip(row):
+        code_n_trip = str(row['Combination_Code']) + str(row['Dumper_Trips']).zfill(2)
+        return code_n_trip
+
+    def add_combination_code(row):
+        code = combination_codes.loc[combination_codes['COMBINATION'] == row['Shovel_Dumper_Lead'], 'CODE']
+        c = ''
+        if (len(code) > 0):
+            c = code.iloc[0]
+        return c
+
+    def add_shovel_dumper_code(row):
+        shovel_code = shovel_codes.loc[shovel_codes['SHOVEL'] == row.name[3], 'CODE']
+        dumper_code = dumper_codes.loc[dumper_codes['DUMPER'] == row.name[4], 'CODE']
+        s=''
+        d=''
+        if (len(shovel_code) > 0):
+            s = shovel_code.iloc[0]
+        if (len(dumper_code) > 0):
+            d = dumper_code.iloc[0]
+        return s+d+'L10'
 
 
+    inc['Shovel_Dumper_Lead'] = inc.apply(lambda row: add_shovel_dumper_code(row), axis=1)
+    inc['Combination_Code'] = inc.apply(lambda row: add_combination_code(row), axis=1)
+    inc['Code_N_Trip'] = inc.apply(lambda row: add_code_n_trip(row), axis=1)
+
+    inc.to_excel(os.path.join(temp_out_path, 'inc2.xlsx'))
+
+
+    #Traverse Row wise
+    # for row in inc.itertuples():
+    #     print(row)
+
+
+    #Traverse Column wise
 
     # Get date shift section
     # excel_references = defaultdict(dict)
