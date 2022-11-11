@@ -63,17 +63,6 @@ def unzip_and_analyze(filename):
             c = code.iloc[0]
         return c
 
-    def add_shovel_dumper_code(row):
-        shovel_code = shovel_codes.loc[shovel_codes['SHOVEL'] == row.name[3], 'CODE']
-        dumper_code = dumper_codes.loc[dumper_codes['DUMPER'] == row.name[4], 'CODE']
-        s=''
-        d=''
-        if (len(shovel_code) > 0):
-            s = shovel_code.iloc[0]
-        if (len(dumper_code) > 0):
-            d = dumper_code.iloc[0]
-        return s+d+'L10'
-
     def add_incentive_earning(row):
         incenive_earning = code_trip_rates.loc[code_trip_rates['CODE_TRIP'] == int(row['Code_N_Trip']), 'EARNING']
         i = ''
