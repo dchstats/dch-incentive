@@ -29,8 +29,8 @@ def unzip_and_analyze(filename):
     combined_df.to_csv(os.path.join(temp_out_path, 'total_production.csv'), index=False, sep=',')
 
     #Prepare dataframe for incentive
-    inc = pd.pivot_table(combined_df, values=['Dumper_Number_of_Trips'], index=['Production_Dates', 'shift', 'Operator.1', 'Shovel_number', 'Dumper_Number'], aggfunc=np.sum).fillna(0)
-    inc.index.names = ['Production_Date', 'Shift', 'Operator_No', 'Shovel_Number', 'Dumper_Number']
+    inc = pd.pivot_table(combined_df, values=['Dumper_Number_of_Trips'], index=['Operator.1', 'Production_Dates', 'shift', 'Shovel_number', 'Dumper_Number'], aggfunc=np.sum).fillna(0)
+    inc.index.names = ['Operator_No', 'Production_Date', 'Shift', 'Shovel_Number', 'Dumper_Number']
     inc.columns = ['Dumper_Trips']
 
     #read incentive scheme
@@ -88,7 +88,7 @@ def unzip_and_analyze(filename):
     # print(inc.index.values)
     # print(inc.loc[(slice(None),'SF1A'),('Dumper_Trips')])
     # inc.reset_index(drop=True, inplace=True)
-    # print(inc)
+    print(inc)
 
     # inc.to_excel(os.path.join(temp_out_path, 'inc2.xlsx'))
 
