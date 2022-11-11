@@ -88,9 +88,9 @@ def unzip_and_analyze(filename):
     # print(inc.index.values)
     # print(inc.loc[(slice(None),'SF1A'),('Dumper_Trips')])
     # inc.reset_index(drop=True, inplace=True)
-    print(inc)
+    # print(inc)
 
-    # inc.to_excel(os.path.join(temp_out_path, 'inc2.xlsx'))
+    inc.to_excel(os.path.join(temp_out_path, 'inc2.xlsx'))
 
     #Traverse Row wise
     # for row in inc.itertuples():
