@@ -60,15 +60,15 @@ def unzip_and_analyze(filename):
         return c
 
     def add_earning(row):
-        trips = code_trip_rates.loc[code_trip_rates['CODE'] == row['Combination_Code'], 'TRIP']
-        rates = code_trip_rates.loc[code_trip_rates['CODE'] == row['Combination_Code'], 'RATE']
-        earning = code_trip_rates.loc[code_trip_rates['CODE'] == row['Combination_Code'], 'EARNING']
-        dumper_trip = row['Dumper_Trips']
+        trips = code_trip_rates.loc[code_trip_rates['CODE'] == row['Comb_Code'], 'TRIP']
+        rates = code_trip_rates.loc[code_trip_rates['CODE'] == row['Comb_Code'], 'RATE']
+        earning = code_trip_rates.loc[code_trip_rates['CODE'] == row['Comb_Code'], 'EARNING']
+        eq_trip = row['Equivalent_Trips']
         incentive = 0
-        if dumper_trip == trips.min():
+        if eq_trip == trips.min():
             incentive = earning.min()
-        elif dumper_trip > trips.min():
-            trip_difference_array = dumper_trip - trips
+        elif eq_trip > trips.min():
+            trip_difference_array = eq_trip - trips
             positive_trips_array = [x if x>0 else 0 for x in trip_difference_array]
             incentive_array = positive_trips_array * rates
             incentive = np.sum(incentive_array)
@@ -79,18 +79,21 @@ def unzip_and_analyze(filename):
         same_operator_combs = inc.loc[[operator_no_index]]
         all_weights = []
         equivalent_case_standard_trip = 0
+        equivalent_case_comb_code = 0
         max_trips = 0
         for i in same_operator_combs.index:
             dumper_trips = same_operator_combs['Dumper_Trips'][i]
             standard_trip = same_operator_combs['Standard_Trips'][i]
-            if dumper_trips and standard_trip:
+            comb_code = same_operator_combs['Comb_Code'][i]
+            if dumper_trips and standard_trip and comb_code:
                 weight = int(dumper_trips) / int(standard_trip)
                 all_weights.append(weight)
                 if int(dumper_trips) > max_trips:
                     max_trips = dumper_trips
                     equivalent_case_standard_trip = standard_trip
+                    equivalent_case_comb_code = comb_code
         equivalent_trips = all_weights * equivalent_case_standard_trip
-        return np.sum(equivalent_trips)
+        return pd.Series([np.sum(equivalent_trips),equivalent_case_comb_code], index=['Equivalent_Trips', 'Eq_Comb_Code'])
     
     def add_standard_trips(row):
         code = combination_codes.loc[combination_codes['COMBINATION'] == row['Shovel_Dumper_Lead'], 'STD TRIP']
@@ -100,10 +103,10 @@ def unzip_and_analyze(filename):
         return c
 
     inc['Shovel_Dumper_Lead'] = inc.apply(lambda row: add_shovel_dumper_code(row), axis=1)
-    inc['Combination_Code'] = inc.apply(lambda row: add_combination_code(row), axis=1)
+    inc['Comb_Code'] = inc.apply(lambda row: add_combination_code(row), axis=1)
     inc['Standard_Trips'] = inc.apply(lambda row: add_standard_trips(row), axis=1)
-    inc['Equivalent_Trips'] = inc.apply(lambda row: add_equivalent_trips(row), axis=1)
-    # inc['Incentive'] = inc.apply(lambda row: add_earning(row), axis=1)
+    inc[['Equivalent_Trips', 'Eq_Comb_Code']] = inc.apply(lambda row: add_equivalent_trips(row), axis=1)
+    inc['Incentive'] = inc.apply(lambda row: add_earning(row), axis=1)
     
     inc.to_excel(os.path.join(temp_out_path, 'inc2.xlsx'))
 
