@@ -58,16 +58,7 @@ def unzip_and_analyze(filename):
         if (len(code) > 0):
             c = code.iloc[0]
         return c
-
-    def find_non_neg_min(arr):
-        nearest_index = -1
-        for i,x in enumerate(arr):
-            if (x<0):
-                break
-            nearest_index = i
-        return nearest_index
                 
-
     def add_incentive(row):
         trips = code_trip_rates.loc[code_trip_rates['CODE'] == row['Eq_Comb_Code'], 'TRIP']
         rates = code_trip_rates.loc[code_trip_rates['CODE'] == row['Eq_Comb_Code'], 'RATE']
@@ -79,7 +70,7 @@ def unzip_and_analyze(filename):
         incentive = 0
         if eq_trip and len(trips)>0:
             trip_difference_array = eq_trip - trips
-            nearest_trip_index = find_non_neg_min(trip_difference_array)
+            nearest_trip_index = len(list(filter(lambda x:x>-1,trip_difference_array)))-1
             if(nearest_trip_index > -1):
                 incentive = earning[nearest_trip_index] + rates[nearest_trip_index]*trip_difference_array[nearest_trip_index]
         return np.rint(incentive)
