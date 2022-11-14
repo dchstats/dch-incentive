@@ -20,5 +20,8 @@
   "homepage": "https://github.com/atul516/dch-incentive#readme",
   "devDependencies": {
     "electron": "^21.2.3"
+  },
+  "dependencies": {
+    "python-shell": "^3.0.1"
   }
 }
