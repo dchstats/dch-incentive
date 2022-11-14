@@ -1,18 +1,3 @@
-const {app, BrowserWindow} = require('electron')
-
-function createWindow () {
-    window = new BrowserWindow({width: 600, height: 400})
-    window.loadFile('index.html')
-  }
-
-app.on('ready', createWindow)
-
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-      app.quit()
-    }
-  })
-
 let {PythonShell} = require('python-shell')
 
 let options = {
