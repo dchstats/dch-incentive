@@ -59,6 +59,15 @@ def unzip_and_analyze(filename):
             c = code.iloc[0]
         return c
 
+    def find_non_neg_min(arr):
+        nearest_index = -1
+        for i,x in enumerate(arr):
+            if (x<0):
+                break
+            nearest_index = i
+        return nearest_index
+                
+
     def add_incentive(row):
         trips = code_trip_rates.loc[code_trip_rates['CODE'] == row['Eq_Comb_Code'], 'TRIP']
         rates = code_trip_rates.loc[code_trip_rates['CODE'] == row['Eq_Comb_Code'], 'RATE']
@@ -70,20 +79,21 @@ def unzip_and_analyze(filename):
         incentive = 0
         if eq_trip and len(trips)>0:
             trip_difference_array = eq_trip - trips
-            nearest_trip_index = [i-1 for i,x in enumerate(trip_difference_array) if x<0]
-            if(len(nearest_trip_index) > 0 and nearest_trip_index[0] > -1):
-                incentive = earning[nearest_trip_index[0]] + rates[nearest_trip_index[0]]*trip_difference_array[nearest_trip_index[0]]
+            nearest_trip_index = find_non_neg_min(trip_difference_array)
+            if(nearest_trip_index > -1):
+                incentive = earning[nearest_trip_index] + rates[nearest_trip_index]*trip_difference_array[nearest_trip_index]
         return np.rint(incentive)
         
     def add_equivalent_trips(row):
-        operator_no_index = row.name[0]
-        same_operator_combs = inc.loc[[operator_no_index]]
+        operator_no_index = row.name[0:3]
+        same_operator_combs = inc.loc[operator_no_index]
         all_weights = []
         equivalent_case_standard_trip = 0
         equivalent_case_comb_code = 0
         max_trips = 0
         for i in same_operator_combs.index:
             dumper_trips = same_operator_combs['Dumper_Trips'][i]
+            # print(dumper_trips)
             standard_trip = same_operator_combs['Standard_Trips'][i]
             comb_code = same_operator_combs['Comb_Code'][i]
             if dumper_trips and standard_trip and comb_code:
@@ -117,4 +127,3 @@ if __name__ == '__main__':
     argvparser.add_argument('-i', '--input', help='Zip file name')
     args = argvparser.parse_args()
     unzip_and_analyze(args.input)
-    
